@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel`, `heatMap` 以及 `table`
 
 
 ## 示例
@@ -377,6 +377,56 @@ func main() {
 }
 ```
 
+### Heat Map（热力图）
+
+热力图将数值矩阵绘制成带颜色的格子，并展示行列标签与色阶图例。支持自定义色阶颜色、
+显式的最小/最大值、缺失值（NaN、+Inf、-Inf 或空值）的独立样式、横向/纵向图例，
+长标签会自动旋转。
+
+```go
+package main
+
+import (
+	"math"
+
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	// 外层为行，内层为列，NaN 与无穷大使用缺失值样式渲染
+	data := [][]float64{
+		{-10, -5, 0, 3},
+		{-7.5, 2, 5, 8},
+		{math.NaN(), 1, 10, 6},
+	}
+	p, err := charts.HeatMapRender(
+		data,
+		[]string{"Warrior", "Mage", "Rogue"},                           // 行标签
+		[]string{"Chapter 1", "Chapter 2", "Chapter 3", "Chapter 4"}, // 列标签
+		charts.TitleTextOptionFunc("Level Difficulty"),
+		charts.WidthOptionFunc(800),
+		charts.HeightOptionFunc(500),
+		// 自定义发散色阶（可选）
+		charts.HeatMapColorsOptionFunc("#313695", "#74add1", "#ffffbf", "#fdae61", "#a50026"),
+		// 缺失值的独立样式
+		charts.HeatMapNullStyleOptionFunc(charts.Color{R: 238, G: 238, B: 238, A: 255}, "-"),
+	)
+	if err != nil {
+		panic(err)
+	}
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+完整的 `HeatMapOption`（通过 `HeatMapOptionRender` 使用）还提供 `Min`/`Max`、
+`Legend`（方向与分段数）、`BorderWidth`/`BorderColor`、`LabelShow`、`LabelRotation`、
+`NullText`、`ValueFormatter` 以及主题与字体字段。空矩阵渲染为空白画布，行长不齐时
+缺失的格子按缺失值处理，常量矩阵使用中间色，行数或列数超过 1000 的矩阵会返回错误。
+
 ### Table
 
 ```go
@@ -477,6 +527,7 @@ func main() {
 - `PieRender`: 饼图表，第一个参数为浮点数数组，对应各占比，支持不定长的OptionFunc参数，用于指定其它的属性
 - `RadarRender`: 雷达图，第一个参数为二维浮点数，对应雷达图中的各值，支持不定长的OptionFunc参数，用于指定其它的属性
 - `FunnelRender`: 漏斗图，第一个参数为浮点数数组，对应各占比，支持不定长的OptionFunc参数，用于指定其它的属性
+- `HeatMapRender`: 热力图，第一个参数为数值矩阵（外层为行、内层为列），第二、三个参数分别为行标签与列标签，支持不定长的OptionFunc参数，用于指定色阶、缺失值样式等属性
 - `PNGTypeOption`: 指定输出PNG
 - `FontFamilyOptionFunc`: 指定使用的字体
 - `ThemeOptionFunc`: 指定使用的主题类型

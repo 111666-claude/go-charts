@@ -46,6 +46,8 @@ const (
 	ChartTypeFunnel = "funnel"
 	// horizontal bar
 	ChartTypeHorizontalBar = "horizontalBar"
+	// heat map
+	ChartTypeHeatMap = "heatMap"
 )
 
 const (

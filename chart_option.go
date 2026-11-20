@@ -77,6 +77,8 @@ type ChartOption struct {
 	Opacity uint8
 	// The child charts
 	Children []ChartOption
+	// The heat map option
+	HeatMap HeatMapOption
 	// The value formatter
 	ValueFormatter ValueFormatter
 }

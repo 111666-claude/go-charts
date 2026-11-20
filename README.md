@@ -21,7 +21,7 @@ Screenshot of common charts, the left part is light theme, the right part is gra
 
 ## Chart Type
 
-These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel` and `table`.
+These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar`, `funnel`, `heat map` and `table`.
 
 ## Example
 
@@ -377,6 +377,60 @@ func main() {
 	// snip...
 }
 ```
+
+### Heat Map
+
+A heat map draws a value matrix as colored cells with row/column labels and a
+color-scale legend. It supports configurable color stops, explicit min/max, an
+independent style for missing values (NaN, +Inf, -Inf or the null value),
+horizontal/vertical legends, and long labels that are rotated automatically.
+
+```go
+package main
+
+import (
+	"math"
+
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	// Rows are the outer slice, columns the inner one.
+	// NaN and infinity are rendered with the independent null style.
+	data := [][]float64{
+		{-10, -5, 0, 3},
+		{-7.5, 2, 5, 8},
+		{math.NaN(), 1, 10, 6},
+	}
+	p, err := charts.HeatMapRender(
+		data,
+		[]string{"Warrior", "Mage", "Rogue"},                 // row labels
+		[]string{"Chapter 1", "Chapter 2", "Chapter 3", "Chapter 4"}, // column labels
+		charts.TitleTextOptionFunc("Level Difficulty"),
+		charts.WidthOptionFunc(800),
+		charts.HeightOptionFunc(500),
+		// Custom diverging color scale (optional).
+		charts.HeatMapColorsOptionFunc("#313695", "#74add1", "#ffffbf", "#fdae61", "#a50026"),
+		// Independent style for missing values.
+		charts.HeatMapNullStyleOptionFunc(charts.Color{R: 238, G: 238, B: 238, A: 255}, "-"),
+	)
+	if err != nil {
+		panic(err)
+	}
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+The full `HeatMapOption` (via `HeatMapOptionRender`) additionally exposes
+`Min`/`Max`, `Legend` (orientation and split count), `BorderWidth`/`BorderColor`,
+`LabelShow`, `LabelRotation`, `NullText`, `ValueFormatter` and theme/font fields.
+Empty matrices render a blank canvas, ragged rows treat missing cells as null
+values, a constant matrix uses the middle color, and matrices over 1000 rows or
+columns return an error.
 
 ### Table
 
