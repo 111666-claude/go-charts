@@ -143,7 +143,7 @@ func (f *funnelChart) render(result *defaultRenderResult, seriesList SeriesList)
 				Y: y,
 			},
 		}
-		color := theme.GetSeriesColor(series.index)
+		color := theme.GetSeriesColor(colorIndexOf(series))
 
 		seriesPainter.OverrideDrawingStyle(Style{
 			FillColor: color,

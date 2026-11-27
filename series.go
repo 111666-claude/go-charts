@@ -134,7 +134,20 @@ type Series struct {
 	Min *float64
 	// Min value of series
 	Max *float64
+	// ColorIndex overrides the palette color index used by this series.
+	// It is mainly used by facet charts so that a series keeps the same
+	// color in every panel. A negative value falls back to the series index.
+	ColorIndex int
 }
+
+// colorIndexOf returns the palette color index of the series
+func colorIndexOf(s Series) int {
+	if s.ColorIndex >= 0 {
+		return s.ColorIndex
+	}
+	return s.index
+}
+
 type SeriesList []Series
 
 func (sl SeriesList) init() {
@@ -149,6 +162,11 @@ func (sl SeriesList) init() {
 			sl[i].Type = ChartTypeLine
 		}
 		sl[i].index = i
+		// A zero ColorIndex means "not set": fall back to the series index.
+		// Positive values are kept as explicit palette overrides.
+		if sl[i].ColorIndex == 0 {
+			sl[i].ColorIndex = -1
+		}
 	}
 }
 

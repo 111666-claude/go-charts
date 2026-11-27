@@ -443,6 +443,61 @@ func main() {
 }
 ```
 
+### Facet Chart
+
+`FacetChart` renders multiple charts as small multiples (facets) arranged in
+a row/column grid inside one PNG or SVG. Every panel keeps its own title,
+while the legend and axis labels are shared so they do not take up space
+repeatedly. Enable `ShareYAxis` to position every value against one global
+scale, so the same value is drawn at the same height in every panel.
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	xLabels := []string{"Mon", "Tue", "Wed", "Thu"}
+	panels := []charts.ChartOption{
+		{
+			Title:  charts.TitleOption{Text: "iOS"},
+			XAxis:  charts.NewXAxisOption(xLabels),
+			Legend: charts.NewLegendOption([]string{"Active"}),
+			SeriesList: charts.SeriesList{
+				charts.NewSeriesFromValues([]float64{120, 132, 101, 134}),
+			},
+		},
+		{
+			Title:  charts.TitleOption{Text: "Android"},
+			XAxis:  charts.NewXAxisOption(xLabels),
+			Legend: charts.NewLegendOption([]string{"Active"}),
+			SeriesList: charts.SeriesList{
+				charts.NewSeriesFromValues([]float64{220, 182, 191, 234}),
+			},
+		},
+	}
+	p, err := charts.FacetChart(charts.FacetChartOption{
+		Type:       charts.ChartOutputSVG,
+		Width:      800,
+		Height:     400,
+		Rows:       1,
+		Columns:    2,
+		ShareYAxis: true,
+		Charts:     panels,
+	})
+	if err != nil {
+		panic(err)
+	}
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	_ = buf
+}
+```
+
 ### ECharts Render
 
 ```go

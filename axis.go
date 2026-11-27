@@ -82,6 +82,10 @@ type AxisOption struct {
 	// The offset of label
 	LabelOffset Box
 	Unit        int
+	// HideLabel keeps the axis line and ticks but suppresses the text
+	// labels. It is used by facet charts to avoid duplicated labels while
+	// retaining a continuous axis across panels.
+	HideLabel bool
 }
 
 func (a *axisPainter) Render() (Box, error) {
@@ -271,20 +275,22 @@ func (a *axisPainter) Render() (Box, error) {
 		})
 	}
 
-	p.Child(PainterPaddingOption(Box{
-		Left:  labelPaddingLeft,
-		Top:   labelPaddingTop,
-		Right: labelPaddingRight,
-	})).MultiText(MultiTextOption{
-		First:        opt.FirstAxis,
-		Align:        textAlign,
-		TextList:     data,
-		Orient:       orient,
-		Unit:         unit,
-		Position:     labelPosition,
-		TextRotation: opt.TextRotation,
-		Offset:       opt.LabelOffset,
-	})
+	if !opt.HideLabel {
+		p.Child(PainterPaddingOption(Box{
+			Left:  labelPaddingLeft,
+			Top:   labelPaddingTop,
+			Right: labelPaddingRight,
+		})).MultiText(MultiTextOption{
+			First:        opt.FirstAxis,
+			Align:        textAlign,
+			TextList:     data,
+			Orient:       orient,
+			Unit:         unit,
+			Position:     labelPosition,
+			TextRotation: opt.TextRotation,
+			Offset:       opt.LabelOffset,
+		})
+	}
 	// 显示辅助线
 	if opt.SplitLineShow {
 		style.StrokeColor = opt.SplitLineColor

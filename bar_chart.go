@@ -109,7 +109,7 @@ func (b *barChart) render(result *defaultRenderResult, seriesList SeriesList) (B
 	for index := range seriesList {
 		series := seriesList[index]
 		yRange := result.axisRanges[series.AxisIndex]
-		seriesColor := theme.GetSeriesColor(series.index)
+		seriesColor := theme.GetSeriesColor(colorIndexOf(series))
 
 		divideValues := xRange.AutoDivide()
 		points := make([]Point, len(series.Data))

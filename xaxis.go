@@ -54,6 +54,9 @@ type XAxisOption struct {
 	FirstAxis int
 	// The offset of label
 	LabelOffset Box
+	// HideLabel keeps the axis line and ticks but suppresses the text
+	// labels, used by facet charts for inner panels.
+	HideLabel   bool
 	isValueAxis bool
 }
 
@@ -90,6 +93,7 @@ func (opt *XAxisOption) ToAxisOption() AxisOption {
 		TextRotation:   opt.TextRotation,
 		LabelOffset:    opt.LabelOffset,
 		FirstAxis:      opt.FirstAxis,
+		HideLabel:      opt.HideLabel,
 	}
 	if opt.isValueAxis {
 		axisOpt.SplitLineShow = true

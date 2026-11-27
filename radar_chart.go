@@ -209,7 +209,7 @@ func (r *radarChart) render(result *defaultRenderResult, seriesList SeriesList) 
 			p := getPolygonPoint(center, r, angles[j])
 			linePoints = append(linePoints, p)
 		}
-		color := theme.GetSeriesColor(series.index)
+		color := theme.GetSeriesColor(colorIndexOf(series))
 		dotFillColor := drawing.ColorWhite
 		if theme.IsDark() {
 			dotFillColor = color

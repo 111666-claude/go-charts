@@ -441,6 +441,59 @@ func main() {
 	// snip...
 }
 ```
+### 分面小图（Facet Chart）
+
+`FacetChart` 将多个图表以分面小图（small multiples）的形式按行列布局渲染到
+同一张 PNG 或 SVG 中。每个面板保留自己的标题，图例与坐标轴标签则统一共享，
+避免重复占用空间。开启 `ShareYAxis` 后，所有数值都基于同一个全局尺度定位，
+因此相同数值在每个面板中的绘制高度完全一致。
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	xLabels := []string{"周一", "周二", "周三", "周四"}
+	panels := []charts.ChartOption{
+		{
+			Title:  charts.TitleOption{Text: "iOS"},
+			XAxis:  charts.NewXAxisOption(xLabels),
+			Legend: charts.NewLegendOption([]string{"活跃"}),
+			SeriesList: charts.SeriesList{
+				charts.NewSeriesFromValues([]float64{120, 132, 101, 134}),
+			},
+		},
+		{
+			Title:  charts.TitleOption{Text: "安卓"},
+			XAxis:  charts.NewXAxisOption(xLabels),
+			Legend: charts.NewLegendOption([]string{"活跃"}),
+			SeriesList: charts.SeriesList{
+				charts.NewSeriesFromValues([]float64{220, 182, 191, 234}),
+			},
+		},
+	}
+	p, err := charts.FacetChart(charts.FacetChartOption{
+		Type:       charts.ChartOutputSVG,
+		Width:      800,
+		Height:     400,
+		Rows:       1,
+		Columns:    2,
+		ShareYAxis: true,
+		Charts:     panels,
+	})
+	if err != nil {
+		panic(err)
+	}
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	_ = buf
+}
+```
 ### ECharts Render
 
 ```go

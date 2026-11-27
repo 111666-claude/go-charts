@@ -46,9 +46,12 @@ type YAxisOption struct {
 	// Color for y axis
 	Color Color
 	// The flag for show axis, set this to *false will hide axis
-	Show           *bool
-	DivideCount    int
-	Unit           int
+	Show        *bool
+	DivideCount int
+	Unit        int
+	// HideLabel keeps the axis line and ticks but suppresses the text
+	// labels, used by facet charts for inner panels.
+	HideLabel      bool
 	isCategoryAxis bool
 }
 
@@ -90,6 +93,7 @@ func (opt *YAxisOption) ToAxisOption(p *Painter) AxisOption {
 		SplitLineColor: theme.GetAxisSplitLineColor(),
 		Show:           opt.Show,
 		Unit:           opt.Unit,
+		HideLabel:      opt.HideLabel,
 	}
 	if !opt.Color.IsZero() {
 		axisOpt.FontColor = opt.Color
