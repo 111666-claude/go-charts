@@ -21,7 +21,7 @@ Screenshot of common charts, the left part is light theme, the right part is gra
 
 ## Chart Type
 
-These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel` and `table`.
+These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar`, `funnel`, `chord` and `table`.
 
 ## Example
 
@@ -378,6 +378,53 @@ func main() {
 }
 ```
 
+### Chord Chart
+
+A directed chord chart renders a named non-negative flow matrix. `Data[i][j]` is
+the flow from node `Names[i]` (source) to node `Names[j]` (target): the two
+reverse edges `A->B` and `B->A` are drawn as distinct ribbons and are never
+merged. Nodes are placed on a ring in stable input order starting at 12 o'clock;
+self loops, one-way edges, zero rows and asymmetric matrices all have
+deterministic handling. Both `png` and `svg` output keep the ribbon endpoints
+aligned with the node arcs when the canvas is scaled.
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	matrix := charts.FlowMatrix{
+		Names: []string{"A", "B", "C"},
+		Data: [][]float64{
+			// A    B    C
+			{0.0, 2.0, 1.0}, // A -> B, A -> C
+			{1.0, 0.0, 1.0}, // B -> A, B -> C
+			{1.0, 1.0, 0.0}, // C -> A, C -> B
+		},
+	}
+	p, err := charts.ChordRender(
+		matrix,
+		charts.TitleTextOptionFunc("Directed Chord"),
+		charts.ChordOptionFunc(charts.ChordOption{
+			Matrix:    matrix,
+			ShowArrow: true,
+		}),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
 ### Table
 
 ```go
@@ -512,7 +559,7 @@ The name with `[]` is new parameter, others are the same as `echarts`.
     - `radar.indicator.min` The minimum value of indicator, default value is 0.
 - `series` The series for chart 
   - `series.name` Series name used for displaying in legend.
-  - `series.type` Series type: `line`, `bar`, `pie`, `radar` or `funnel`
+  - `series.type` Series type: `line`, `bar`, `pie`, `radar`, `funnel` or `chord`
   - `series.radius` Radius of Pie chart:`50%`, default is `40%`
   - `series.yAxisIndex` Index of y axis to combine with, which is useful for multiple y axes in one chart
   - `series.label.show` Whether to show label

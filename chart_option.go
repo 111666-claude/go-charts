@@ -77,6 +77,8 @@ type ChartOption struct {
 	Children []ChartOption
 	// The value formatter
 	ValueFormatter ValueFormatter
+	// The directed chord chart option
+	Chord ChordOption
 }
 
 // OptionFunc option function
@@ -250,6 +252,19 @@ func MarkPointOptionFunc(seriesIndex int, markPointTypes ...string) OptionFunc {
 			return
 		}
 		opt.SeriesList[seriesIndex].MarkPoint = NewMarkPoint(markPointTypes...)
+	}
+}
+
+// ChordOptionFunc sets the directed chord chart option
+func ChordOptionFunc(chord ChordOption) OptionFunc {
+	return func(opt *ChartOption) {
+		opt.Chord = chord
+		if len(chord.Matrix.Names) != 0 && len(opt.Legend.Data) == 0 {
+			opt.Legend.Data = chord.Matrix.Names
+		}
+		if len(opt.SeriesList.Filter(ChartTypeChord)) == 0 {
+			opt.SeriesList = NewChordSeriesList(chord.Matrix)
+		}
 	}
 }
 

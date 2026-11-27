@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel`, `chord` 以及 `table`
 
 
 ## 示例
@@ -377,6 +377,51 @@ func main() {
 }
 ```
 
+### Chord Chart
+
+有向弦图（directed chord chart）基于带名称的非负流量矩阵绘制，`Data[i][j]` 表示从节点
+`Names[i]`（源）流向节点 `Names[j]`（目标）的流量：`A->B` 与 `B->A` 两条反向边会绘制为
+两条独立的带，不会被合并。节点按输入顺序从 12 点钟方向开始稳定地排列在圆环上；自环、
+单向边、零行以及非对称矩阵都有确定的处理方式。输出 `png` 与 `svg` 时，画布缩放后带的
+端点仍与节点弧段保持对齐。
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	matrix := charts.FlowMatrix{
+		Names: []string{"A", "B", "C"},
+		Data: [][]float64{
+			// A    B    C
+			{0.0, 2.0, 1.0}, // A -> B, A -> C
+			{1.0, 0.0, 1.0}, // B -> A, B -> C
+			{1.0, 1.0, 0.0}, // C -> A, C -> B
+		},
+	}
+	p, err := charts.ChordRender(
+		matrix,
+		charts.TitleTextOptionFunc("Directed Chord"),
+		charts.ChordOptionFunc(charts.ChordOption{
+			Matrix:    matrix,
+			ShowArrow: true,
+		}),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
 ### Table
 
 ```go
@@ -477,6 +522,7 @@ func main() {
 - `PieRender`: 饼图表，第一个参数为浮点数数组，对应各占比，支持不定长的OptionFunc参数，用于指定其它的属性
 - `RadarRender`: 雷达图，第一个参数为二维浮点数，对应雷达图中的各值，支持不定长的OptionFunc参数，用于指定其它的属性
 - `FunnelRender`: 漏斗图，第一个参数为浮点数数组，对应各占比，支持不定长的OptionFunc参数，用于指定其它的属性
+- `ChordRender`: 有向弦图，第一个参数为带名称的非负流量矩阵 `FlowMatrix`（行是源、列是目标），支持不定长的OptionFunc参数，用于指定其它的属性
 - `PNGTypeOption`: 指定输出PNG
 - `FontFamilyOptionFunc`: 指定使用的字体
 - `ThemeOptionFunc`: 指定使用的主题类型
@@ -537,7 +583,7 @@ func main() {
     - `radar.indicator.min` 指示器的最小值，可选，默认为 0
 - `series` 图表的数据项列表
   - `series.name` 图表的名称，与`legend.data`对应，两者只只设置其一
-  - `series.type` 图表的展示类型，暂支持`line`, `bar`, `pie`, `radar` 以及 `funnel`。需要注意只有`line`与`bar`可以混用
+  - `series.type` 图表的展示类型，暂支持`line`, `bar`, `pie`, `radar`, `funnel` 以及 `chord`。需要注意只有`line`与`bar`可以混用
   - `series.radius` 饼图的半径值，如`50%`，默认为`40%`
   - `series.yAxisIndex` 该数据项使用的y轴，默认为0，对yAxis的配置对应
   - `series.label.show` 是否显示文本标签(默认为对应的值)

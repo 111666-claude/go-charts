@@ -322,6 +322,7 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 	pieSeriesList := seriesList.Filter(ChartTypePie)
 	radarSeriesList := seriesList.Filter(ChartTypeRadar)
 	funnelSeriesList := seriesList.Filter(ChartTypeFunnel)
+	chordSeriesList := seriesList.Filter(ChartTypeChord)
 
 	if len(horizontalBarSeriesList) != 0 && len(horizontalBarSeriesList) != seriesCount {
 		return nil, errors.New("Horizontal bar can not mix other charts")
@@ -334,6 +335,9 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 	}
 	if len(funnelSeriesList) != 0 && len(funnelSeriesList) != seriesCount {
 		return nil, errors.New("Funnel can not mix other charts")
+	}
+	if len(chordSeriesList) != 0 && len(chordSeriesList) != seriesCount {
+		return nil, errors.New("Chord can not mix other charts")
 	}
 
 	axisReversed := len(horizontalBarSeriesList) != 0
@@ -351,7 +355,8 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 	}
 	if len(pieSeriesList) != 0 ||
 		len(radarSeriesList) != 0 ||
-		len(funnelSeriesList) != 0 {
+		len(funnelSeriesList) != 0 ||
+		len(chordSeriesList) != 0 {
 		renderOpt.XAxis.Show = FalseFlag()
 		renderOpt.YAxisOptions = []YAxisOption{
 			{
@@ -444,6 +449,22 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 				Theme: opt.theme,
 				Font:  opt.font,
 			}).render(renderResult, funnelSeriesList)
+			return err
+		})
+	}
+
+	// chord chart
+	if len(chordSeriesList) != 0 {
+		handler.Add(func() error {
+			_, err := NewChordChart(p, ChordChartOption{
+				Theme:               opt.theme,
+				Font:                opt.font,
+				Padding:             opt.Padding,
+				Title:               opt.Title,
+				Legend:              opt.Legend,
+				Chord:               opt.Chord,
+				backgroundIsFilled:  true,
+			}).render(renderResult, chordSeriesList)
 			return err
 		})
 	}
