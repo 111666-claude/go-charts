@@ -21,7 +21,7 @@ Screenshot of common charts, the left part is light theme, the right part is gra
 
 ## Chart Type
 
-These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel` and `table`.
+These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar`, `wind rose`, `funnel` and `table`.
 
 ## Example
 
@@ -378,6 +378,53 @@ func main() {
 }
 ```
 
+### Wind Rose Chart
+
+The wind rose chart aggregates angle/weight samples into polar frequency
+sectors. Each data item is a pair of `[angle, weight]`: the angle is in
+degrees `[0, 360)` where `0` is north and increases clockwise, and the weight
+must be non negative. Sectors are centered on the compass directions, so
+`359` and `1` are aggregated into the same north centered sector. The sector
+width is configurable and must divide `360` evenly.
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	// Each item is [angle, weight]
+	values := [][2]float64{
+		{359, 1},
+		{1, 1},
+		{45, 3},
+		{90, 2},
+		{180, 4},
+		{270, 5},
+	}
+	p, err := charts.WindRoseRender(
+		values,
+		charts.TitleTextOptionFunc("Wind Rose"),
+		// 30 degree sectors (12 sectors), must divide 360 evenly
+		charts.WindRoseSectorWidthOptionFunc(30),
+		charts.LegendLabelsOptionFunc([]string{
+			"Wind Frequency",
+		}),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
 ### Table
 
 ```go
@@ -512,7 +559,7 @@ The name with `[]` is new parameter, others are the same as `echarts`.
     - `radar.indicator.min` The minimum value of indicator, default value is 0.
 - `series` The series for chart 
   - `series.name` Series name used for displaying in legend.
-  - `series.type` Series type: `line`, `bar`, `pie`, `radar` or `funnel`
+  - `series.type` Series type: `line`, `bar`, `pie`, `radar`, `windRose` or `funnel`
   - `series.radius` Radius of Pie chart:`50%`, default is `40%`
   - `series.yAxisIndex` Index of y axis to combine with, which is useful for multiple y axes in one chart
   - `series.label.show` Whether to show label

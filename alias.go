@@ -39,11 +39,12 @@ type Point struct {
 }
 
 const (
-	ChartTypeLine   = "line"
-	ChartTypeBar    = "bar"
-	ChartTypePie    = "pie"
-	ChartTypeRadar  = "radar"
-	ChartTypeFunnel = "funnel"
+	ChartTypeLine     = "line"
+	ChartTypeBar      = "bar"
+	ChartTypePie      = "pie"
+	ChartTypeRadar    = "radar"
+	ChartTypeFunnel   = "funnel"
+	ChartTypeWindRose = "windRose"
 	// horizontal bar
 	ChartTypeHorizontalBar = "horizontalBar"
 )

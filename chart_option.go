@@ -57,6 +57,8 @@ type ChartOption struct {
 	Box Box
 	// The series list
 	SeriesList SeriesList
+	// The wind rose chart option
+	WindRoseChart WindRoseChartOption
 	// The radar indicator list
 	RadarIndicators []RadarIndicator
 	// The background color of chart
@@ -354,6 +356,30 @@ func FunnelRender(values []float64, opts ...OptionFunc) (*Painter, error) {
 	return Render(ChartOption{
 		SeriesList: seriesList,
 	}, opts...)
+}
+
+// WindRoseRender wind rose chart render.
+// Each item of data is a pair of angle and weight: [angle, weight].
+// The angle is in degrees [0, 360): 0 means north and it increases
+// clockwise, and the weight should not be negative.
+func WindRoseRender(data [][2]float64, opts ...OptionFunc) (*Painter, error) {
+	return Render(ChartOption{
+		SeriesList: NewWindRoseSeriesList(data),
+	}, opts...)
+}
+
+// WindRoseSectorWidthOptionFunc sets the sector width of wind rose chart
+func WindRoseSectorWidthOptionFunc(sectorWidth float64) OptionFunc {
+	return func(opt *ChartOption) {
+		opt.WindRoseChart.SectorWidth = sectorWidth
+	}
+}
+
+// WindRoseRadialAxisOptionFunc sets the radial axis option of wind rose chart
+func WindRoseRadialAxisOptionFunc(radialAxis WindRoseRadialAxisOption) OptionFunc {
+	return func(opt *ChartOption) {
+		opt.WindRoseChart.RadialAxis = radialAxis
+	}
 }
 
 // TableRender table chart render

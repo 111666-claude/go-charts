@@ -322,6 +322,7 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 	pieSeriesList := seriesList.Filter(ChartTypePie)
 	radarSeriesList := seriesList.Filter(ChartTypeRadar)
 	funnelSeriesList := seriesList.Filter(ChartTypeFunnel)
+	windRoseSeriesList := seriesList.Filter(ChartTypeWindRose)
 
 	if len(horizontalBarSeriesList) != 0 && len(horizontalBarSeriesList) != seriesCount {
 		return nil, errors.New("Horizontal bar can not mix other charts")
@@ -334,6 +335,9 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 	}
 	if len(funnelSeriesList) != 0 && len(funnelSeriesList) != seriesCount {
 		return nil, errors.New("Funnel can not mix other charts")
+	}
+	if len(windRoseSeriesList) != 0 && len(windRoseSeriesList) != seriesCount {
+		return nil, errors.New("Wind rose can not mix other charts")
 	}
 
 	axisReversed := len(horizontalBarSeriesList) != 0
@@ -351,7 +355,8 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 	}
 	if len(pieSeriesList) != 0 ||
 		len(radarSeriesList) != 0 ||
-		len(funnelSeriesList) != 0 {
+		len(funnelSeriesList) != 0 ||
+		len(windRoseSeriesList) != 0 {
 		renderOpt.XAxis.Show = FalseFlag()
 		renderOpt.YAxisOptions = []YAxisOption{
 			{
@@ -444,6 +449,17 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 				Theme: opt.theme,
 				Font:  opt.font,
 			}).render(renderResult, funnelSeriesList)
+			return err
+		})
+	}
+
+	// wind rose chart
+	if len(windRoseSeriesList) != 0 {
+		handler.Add(func() error {
+			windRoseOpt := opt.WindRoseChart
+			windRoseOpt.Theme = opt.theme
+			windRoseOpt.Font = opt.font
+			_, err := NewWindRoseChart(p, windRoseOpt).render(renderResult, windRoseSeriesList)
 			return err
 		})
 	}

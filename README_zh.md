@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `wind rose`, `funnel` 以及 `table`
 
 
 ## 示例
@@ -377,6 +377,48 @@ func main() {
 }
 ```
 
+### Wind Rose Chart
+
+风玫瑰图（风向图）将角度与权重样本聚合为极坐标频数扇形。每个数据项为 `[角度, 权重]`：角度单位为度，范围 `[0, 360)`，其中 `0` 表示正北且顺时针递增；权重不能为负数。扇区以罗盘方向为中心，因此 `359` 与 `1` 会聚合到同一个以北为中心的扇区。扇区宽度可配置，且必须能整除 `360`。
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	// 每个数据项为 [角度, 权重]
+	values := [][2]float64{
+		{359, 1},
+		{1, 1},
+		{45, 3},
+		{90, 2},
+		{180, 4},
+		{270, 5},
+	}
+	p, err := charts.WindRoseRender(
+		values,
+		charts.TitleTextOptionFunc("Wind Rose"),
+		// 30 度一个扇区（共 12 个），必须能整除 360
+		charts.WindRoseSectorWidthOptionFunc(30),
+		charts.LegendLabelsOptionFunc([]string{
+			"Wind Frequency",
+		}),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
 ### Table
 
 ```go
@@ -477,6 +519,7 @@ func main() {
 - `PieRender`: 饼图表，第一个参数为浮点数数组，对应各占比，支持不定长的OptionFunc参数，用于指定其它的属性
 - `RadarRender`: 雷达图，第一个参数为二维浮点数，对应雷达图中的各值，支持不定长的OptionFunc参数，用于指定其它的属性
 - `FunnelRender`: 漏斗图，第一个参数为浮点数数组，对应各占比，支持不定长的OptionFunc参数，用于指定其它的属性
+- `WindRoseRender`: 风玫瑰图，第一个参数为 `[角度, 权重]` 的二维数组，角度范围 `[0, 360)` 且 0 为正北、顺时针递增，支持不定长的OptionFunc参数，用于指定其它的属性
 - `PNGTypeOption`: 指定输出PNG
 - `FontFamilyOptionFunc`: 指定使用的字体
 - `ThemeOptionFunc`: 指定使用的主题类型
@@ -537,7 +580,7 @@ func main() {
     - `radar.indicator.min` 指示器的最小值，可选，默认为 0
 - `series` 图表的数据项列表
   - `series.name` 图表的名称，与`legend.data`对应，两者只只设置其一
-  - `series.type` 图表的展示类型，暂支持`line`, `bar`, `pie`, `radar` 以及 `funnel`。需要注意只有`line`与`bar`可以混用
+  - `series.type` 图表的展示类型，暂支持`line`, `bar`, `pie`, `radar`, `windRose` 以及 `funnel`。需要注意只有`line`与`bar`可以混用
   - `series.radius` 饼图的半径值，如`50%`，默认为`40%`
   - `series.yAxisIndex` 该数据项使用的y轴，默认为0，对yAxis的配置对应
   - `series.label.show` 是否显示文本标签(默认为对应的值)

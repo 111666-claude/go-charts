@@ -34,6 +34,37 @@ type SeriesData struct {
 	Value float64
 	// The style of series data
 	Style Style
+	// The angle of series data in degrees [0, 360),
+	// which is only used by the wind rose chart.
+	// 0 means north and the angle increases clockwise.
+	Angle float64
+}
+
+// NewWindRoseData returns the series data of wind rose chart.
+// The angle is in degrees [0, 360): 0 means north and it
+// increases clockwise. Both angle and weight should not be negative.
+func NewWindRoseData(weight, angle float64) SeriesData {
+	return SeriesData{
+		Value: weight,
+		Angle: angle,
+	}
+}
+
+// NewWindRoseSeriesList returns a single series wind rose series list.
+// Each item of data is a pair of angle and weight: [angle, weight].
+func NewWindRoseSeriesList(data [][2]float64, name ...string) SeriesList {
+	seriesData := make([]SeriesData, len(data))
+	for index, item := range data {
+		seriesData[index] = NewWindRoseData(item[1], item[0])
+	}
+	s := Series{
+		Type: ChartTypeWindRose,
+		Data: seriesData,
+	}
+	if len(name) != 0 {
+		s.Name = name[0]
+	}
+	return SeriesList{s}
 }
 
 // NewSeriesListDataFromValues returns a series list
