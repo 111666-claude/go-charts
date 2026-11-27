@@ -21,7 +21,7 @@ Screenshot of common charts, the left part is light theme, the right part is gra
 
 ## Chart Type
 
-These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel` and `table`.
+These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar`, `funnel`, `mosaic` and `table`.
 
 ## Example
 
@@ -378,7 +378,12 @@ func main() {
 }
 ```
 
-### Table
+### Mosaic Chart
+
+A mosaic chart shows the joint distribution of two categorical variables.
+It takes a non-negative row x column frequency table: each column's width
+follows its column total, and each tile's height follows its proportion
+inside the column.
 
 ```go
 package main
@@ -387,6 +392,44 @@ import (
 	"github.com/vicanso/go-charts/v2"
 )
 
+func main() {
+	// Data[row][column], rows are the legend categories,
+	// columns are the axis categories
+	data := [][]float64{
+		{30, 10},
+		{10, 50},
+	}
+	p, err := charts.MosaicOptionRender(charts.MosaicChartOption{
+		Data:         data,
+		ColumnLabels: []string{"Search", "Direct"},
+		RowLabels:    []string{"PNG", "SVG"},
+		// Show the frequency value inside each tile
+		ShowValue: true,
+		Title: charts.TitleOption{
+			Text: "Asset Library",
+			Left: charts.PositionCenter,
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+### Table
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
 func main() {
 	header := []string{
 		"Name",

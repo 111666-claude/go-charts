@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel`, `mosaic` 以及 `table`
 
 
 ## 示例
@@ -365,6 +365,48 @@ func main() {
 			"Order",
 		}),
 	)
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+### Mosaic Chart
+
+马赛克图用于展示两个分类变量的联合分布。输入为非负的行 x 列频数表
+（`Data[row][column]`）：每列宽度按该列总量分配，每个色块的高度按其在
+该列内的比例分配，支持坐标轴标签、图例以及可选的频数标注。
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	// 行对应图例分类，列对应坐标轴分类
+	data := [][]float64{
+		{30, 10},
+		{10, 50},
+	}
+	p, err := charts.MosaicOptionRender(charts.MosaicChartOption{
+		Data:         data,
+		ColumnLabels: []string{"Search", "Direct"},
+		RowLabels:    []string{"PNG", "SVG"},
+		// 在色块中显示频数
+		ShowValue: true,
+		Title: charts.TitleOption{
+			Text: "Asset Library",
+			Left: charts.PositionCenter,
+		},
+	})
 	if err != nil {
 		panic(err)
 	}
