@@ -21,7 +21,7 @@ Screenshot of common charts, the left part is light theme, the right part is gra
 
 ## Chart Type
 
-These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel` and `table`.
+These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar`, `funnel`, `voronoi` and `table`.
 
 ## Example
 
@@ -378,11 +378,62 @@ func main() {
 }
 ```
 
-### Table
+### Voronoi Chart
+
+The bounded Voronoi chart partitions a rectangle into the nearest regions of
+a set of sites (for example the service areas of watchtowers). Every region
+is a polygon clipped by the visible rectangle, so regions never leave the
+view, overlap or leave an unassigned gap. Both `svg` and `png` output are
+supported.
 
 ```go
 package main
 
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	sites := []charts.VoronoiSite{
+		{X: 0, Y: 0, Name: "watchtower A"},
+		{X: 2, Y: 0, Name: "watchtower B"},
+	}
+	// The visible data rectangle.
+	rect := charts.VoronoiRect{
+		X0: 0,
+		Y0: -1,
+		X1: 2,
+		Y1: 1,
+	}
+	p, err := charts.VoronoiOptionRender(charts.VoronoiChartOption{
+		Type:       charts.ChartOutputPNG,
+		Width:      600,
+		Height:     400,
+		Sites:      sites,
+		Rect:       rect,
+		ShowBorder: true,
+		ShowSite:   true,
+		ShowLabel:  true,
+		Title: charts.TitleOption{
+			Text: "Bounded Voronoi",
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+### Table
+
+```go
+package main
 import (
 	"github.com/vicanso/go-charts/v2"
 )
@@ -512,7 +563,7 @@ The name with `[]` is new parameter, others are the same as `echarts`.
     - `radar.indicator.min` The minimum value of indicator, default value is 0.
 - `series` The series for chart 
   - `series.name` Series name used for displaying in legend.
-  - `series.type` Series type: `line`, `bar`, `pie`, `radar` or `funnel`
+  - `series.type` Series type: `line`, `bar`, `pie`, `radar`, `funnel` or `voronoi`
   - `series.radius` Radius of Pie chart:`50%`, default is `40%`
   - `series.yAxisIndex` Index of y axis to combine with, which is useful for multiple y axes in one chart
   - `series.label.show` Whether to show label

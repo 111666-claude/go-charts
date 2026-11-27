@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel`, `voronoi` 以及 `table`
 
 
 ## 示例
@@ -377,6 +377,56 @@ func main() {
 }
 ```
 
+### Voronoi Chart
+
+有界 Voronoi 图将一个矩形按站点（例如哨塔）划分为各自的最近服务区域。
+每个区域都是被可视矩形裁剪后的多边形，因此区域不会越出视域、不会相互覆盖，
+也不会留下未分配的空隙，支持 `svg` 与 `png` 两种输出。
+
+```go
+package main
+
+import (
+	charts "github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	sites := []charts.VoronoiSite{
+		{X: 0, Y: 0, Name: "哨塔 A"},
+		{X: 2, Y: 0, Name: "哨塔 B"},
+	}
+	// 可视的数据矩形
+	rect := charts.VoronoiRect{
+		X0: 0,
+		Y0: -1,
+		X1: 2,
+		Y1: 1,
+	}
+	p, err := charts.VoronoiOptionRender(charts.VoronoiChartOption{
+		Type:       charts.ChartOutputPNG,
+		Width:      600,
+		Height:     400,
+		Sites:      sites,
+		Rect:       rect,
+		ShowBorder: true,
+		ShowSite:   true,
+		ShowLabel:  true,
+		Title: charts.TitleOption{
+			Text: "有界 Voronoi 分区",
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
 ### Table
 
 ```go
@@ -537,7 +587,7 @@ func main() {
     - `radar.indicator.min` 指示器的最小值，可选，默认为 0
 - `series` 图表的数据项列表
   - `series.name` 图表的名称，与`legend.data`对应，两者只只设置其一
-  - `series.type` 图表的展示类型，暂支持`line`, `bar`, `pie`, `radar` 以及 `funnel`。需要注意只有`line`与`bar`可以混用
+  - `series.type` 图表的展示类型，暂支持`line`, `bar`, `pie`, `radar`, `funnel` 以及 `voronoi`。需要注意只有`line`与`bar`可以混用
   - `series.radius` 饼图的半径值，如`50%`，默认为`40%`
   - `series.yAxisIndex` 该数据项使用的y轴，默认为0，对yAxis的配置对应
   - `series.label.show` 是否显示文本标签(默认为对应的值)

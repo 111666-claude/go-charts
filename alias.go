@@ -46,6 +46,8 @@ const (
 	ChartTypeFunnel = "funnel"
 	// horizontal bar
 	ChartTypeHorizontalBar = "horizontalBar"
+	// bounded Voronoi diagram
+	ChartTypeVoronoi = "voronoi"
 )
 
 const (
