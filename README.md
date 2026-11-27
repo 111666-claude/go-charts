@@ -21,7 +21,7 @@ Screenshot of common charts, the left part is light theme, the right part is gra
 
 ## Chart Type
 
-These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel` and `table`.
+These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel`, `table` and `choropleth`.
 
 ## Example
 
@@ -435,6 +435,70 @@ func main() {
 		panic(err)
 	}
 
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+### Choropleth Chart
+
+A planar choropleth fills named closed polygon regions with a configurable
+segmented color scale. The input planar coordinates are used directly without
+any geographic projection, holes (e.g. lakes) keep the background color, and
+the fill geometry is identical for PNG and SVG output.
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func value(v float64) *float64 {
+	return &v
+}
+
+func main() {
+	regions := []charts.MapRegion{
+		{
+			Name: "North",
+			Polygon: []charts.Point2D{
+				{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1},
+			},
+			// a hole (lake) keeps the background color
+			Holes: [][]charts.Point2D{
+				{{X: 0.25, Y: 0.25}, {X: 0.75, Y: 0.25}, {X: 0.75, Y: 0.75}, {X: 0.25, Y: 0.75}},
+			},
+			Value: value(1),
+		},
+		{
+			Name: "South",
+			Polygon: []charts.Point2D{
+				{X: 1, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 1, Y: 1},
+			},
+			// a nil value is treated as missing data
+			Value: value(3),
+		},
+	}
+	p, err := charts.ChoroplethRender(charts.ChoroplethChartOption{
+		Type:      charts.ChartOutputPNG, // or charts.ChartOutputSVG
+		Width:     500,
+		Height:    420,
+		ShowLabel: true,
+		Regions:   regions,
+		VisualMap: charts.VisualMap{
+			Min:        charts.NewFloatPoint(0),
+			Max:        charts.NewFloatPoint(4),
+			PieceCount: 2,
+			ShowNoData: true,
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
 	buf, err := p.Bytes()
 	if err != nil {
 		panic(err)

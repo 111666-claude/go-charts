@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel`、`table` 以及 `choropleth`（平面分区设色图）
 
 
 ## 示例
@@ -441,6 +441,67 @@ func main() {
 	// snip...
 }
 ```
+### Choropleth Chart（平面分区设色图）
+
+平面分区设色图根据可配置的分段色阶为带名称的封闭多边形区域着色。直接使用输入的平面坐标，不做任何地理投影；洞（如湖泊）保持背景色，PNG 与 SVG 输出的填充几何完全一致。
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func value(v float64) *float64 {
+	return &v
+}
+
+func main() {
+	regions := []charts.MapRegion{
+		{
+			Name: "North",
+			Polygon: []charts.Point2D{
+				{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1},
+			},
+			// 洞（湖泊）保持背景色
+			Holes: [][]charts.Point2D{
+				{{X: 0.25, Y: 0.25}, {X: 0.75, Y: 0.25}, {X: 0.75, Y: 0.75}, {X: 0.25, Y: 0.75}},
+			},
+			Value: value(1),
+		},
+		{
+			Name: "South",
+			Polygon: []charts.Point2D{
+				{X: 1, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 1, Y: 1},
+			},
+			// nil 值按缺值处理
+			Value: value(3),
+		},
+	}
+	p, err := charts.ChoroplethRender(charts.ChoroplethChartOption{
+		Type:      charts.ChartOutputPNG, // 或 charts.ChartOutputSVG
+		Width:     500,
+		Height:    420,
+		ShowLabel: true,
+		Regions:   regions,
+		VisualMap: charts.VisualMap{
+			Min:        charts.NewFloatPoint(0),
+			Max:        charts.NewFloatPoint(4),
+			PieceCount: 2,
+			ShowNoData: true,
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
 ### ECharts Render
 
 ```go
