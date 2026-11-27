@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel`, `table` 以及 `ewma`(过程控制图)
 
 
 ## 示例
@@ -477,6 +477,7 @@ func main() {
 - `PieRender`: 饼图表，第一个参数为浮点数数组，对应各占比，支持不定长的OptionFunc参数，用于指定其它的属性
 - `RadarRender`: 雷达图，第一个参数为二维浮点数，对应雷达图中的各值，支持不定长的OptionFunc参数，用于指定其它的属性
 - `FunnelRender`: 漏斗图，第一个参数为浮点数数组，对应各占比，支持不定长的OptionFunc参数，用于指定其它的属性
+- `EWMARender`: EWMA过程控制图，参数为EWMAChartOption，包含有序观测、基线均值/标准差、平滑因子lambda及重置分段等设置
 - `PNGTypeOption`: 指定输出PNG
 - `FontFamilyOptionFunc`: 指定使用的字体
 - `ThemeOptionFunc`: 指定使用的主题类型
