@@ -106,6 +106,9 @@ type defaultRenderOption struct {
 	backgroundIsFilled bool
 	// x y axis is reversed
 	axisReversed bool
+	// fixedRange uses the exact y axis min/max without the default
+	// padding and unit snapping, it is used by stream chart
+	fixedRange bool
 }
 
 type defaultRenderResult struct {
@@ -191,7 +194,8 @@ func defaultRender(p *Painter, opt defaultRenderOption) (*defaultRenderResult, e
 			divideCount = defaultAxisDivideCount
 		}
 		max, min := opt.SeriesList.GetMaxMin(index)
-		r := NewRange(AxisRangeOption{
+		var r axisRange
+		rangeOption := AxisRangeOption{
 			Painter: p,
 			Min:     min,
 			Max:     max,
@@ -199,12 +203,25 @@ func defaultRender(p *Painter, opt defaultRenderOption) (*defaultRenderResult, e
 			Size: rangeHeight,
 			// 分隔数量
 			DivideCount: divideCount,
-		})
-		if yAxisOption.Min != nil && *yAxisOption.Min <= min {
-			r.min = *yAxisOption.Min
 		}
-		if yAxisOption.Max != nil && *yAxisOption.Max >= max {
-			r.max = *yAxisOption.Max
+		if opt.fixedRange {
+			r = NewFixedRange(rangeOption)
+		} else {
+			r = NewRange(rangeOption)
+		}
+		if yAxisOption.Min != nil {
+			if !opt.fixedRange && *yAxisOption.Min > min {
+				// the default range only accepts a min below the data min
+			} else {
+				r.min = *yAxisOption.Min
+			}
+		}
+		if yAxisOption.Max != nil {
+			if !opt.fixedRange && *yAxisOption.Max < max {
+				// the default range only accepts a max above the data max
+			} else {
+				r.max = *yAxisOption.Max
+			}
 		}
 		result.axisRanges[index] = r
 
@@ -322,6 +339,7 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 	pieSeriesList := seriesList.Filter(ChartTypePie)
 	radarSeriesList := seriesList.Filter(ChartTypeRadar)
 	funnelSeriesList := seriesList.Filter(ChartTypeFunnel)
+	streamSeriesList := seriesList.Filter(ChartTypeStream)
 
 	if len(horizontalBarSeriesList) != 0 && len(horizontalBarSeriesList) != seriesCount {
 		return nil, errors.New("Horizontal bar can not mix other charts")
@@ -334,6 +352,9 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 	}
 	if len(funnelSeriesList) != 0 && len(funnelSeriesList) != seriesCount {
 		return nil, errors.New("Funnel can not mix other charts")
+	}
+	if len(streamSeriesList) != 0 && len(streamSeriesList) != seriesCount {
+		return nil, errors.New("Stream can not mix other charts")
 	}
 
 	axisReversed := len(horizontalBarSeriesList) != 0
@@ -364,13 +385,46 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 		renderOpt.YAxisOptions[0].Unit = 1
 	}
 
+	// stream chart: the free baseline means the y axis spans the
+	// stacked boundaries instead of the raw series values
+	var streamLayout *streamLayout
+	var err error
+	if len(streamSeriesList) != 0 {
+		baseline := opt.StreamBaseline
+		if baseline == "" {
+			baseline = StreamBaselineCenter
+		}
+		streamLayout, err = newStreamLayout(streamSeriesList, baseline, opt.StreamXValues)
+		if err != nil {
+			return nil, err
+		}
+		if len(renderOpt.YAxisOptions) == 0 {
+			renderOpt.YAxisOptions = []YAxisOption{{}}
+		}
+		span := streamLayout.maxValue - streamLayout.minValue
+		pad := span * 0.05
+		if renderOpt.YAxisOptions[0].Min == nil {
+			min := streamLayout.minValue - pad
+			renderOpt.YAxisOptions[0].Min = &min
+		}
+		if renderOpt.YAxisOptions[0].Max == nil {
+			max := streamLayout.maxValue + pad
+			renderOpt.YAxisOptions[0].Max = &max
+		}
+		if renderOpt.XAxis.BoundaryGap == nil {
+			renderOpt.XAxis.BoundaryGap = FalseFlag()
+		}
+		// the stream chart data is already baseline transformed,
+		// pin the exact range without padding or unit snapping
+		renderOpt.fixedRange = true
+	}
+
 	renderResult, err := defaultRender(p, renderOpt)
 	if err != nil {
 		return nil, err
 	}
 
 	handler := renderHandler{}
-
 	// bar chart
 	if len(barSeriesList) != 0 {
 		handler.Add(func() error {
@@ -444,6 +498,21 @@ func Render(opt ChartOption, opts ...OptionFunc) (*Painter, error) {
 				Theme: opt.theme,
 				Font:  opt.font,
 			}).render(renderResult, funnelSeriesList)
+			return err
+		})
+	}
+
+	// stream chart
+	if len(streamSeriesList) != 0 {
+		handler.Add(func() error {
+			_, err := NewStreamChart(p, StreamChartOption{
+				Theme:      opt.theme,
+				Font:       opt.font,
+				XAxis:      opt.XAxis,
+				Baseline:   opt.StreamBaseline,
+				XValues:    opt.StreamXValues,
+				SeriesList: streamSeriesList,
+			}).render(renderResult, streamSeriesList)
 			return err
 		})
 	}

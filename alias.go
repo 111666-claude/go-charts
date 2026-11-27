@@ -46,6 +46,8 @@ const (
 	ChartTypeFunnel = "funnel"
 	// horizontal bar
 	ChartTypeHorizontalBar = "horizontalBar"
+	// streamgraph
+	ChartTypeStream = "stream"
 )
 
 const (

@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel`, `stream` 以及 `table`
 
 
 ## 示例
@@ -364,6 +364,55 @@ func main() {
 			"Inquiry",
 			"Order",
 		}),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+### Stream Chart
+
+流图（streamgraph）将非负的多系列数据绘制为围绕自由基线连续堆叠的色带，
+支持 `center`（居中）和 `wiggle`（最小摆动）两种基线，系列顺序保持稳定，
+并可通过 `StreamXValuesOptionFunc` 支持非等距时间序列。null 值视为缺测数据，
+负值和非有限值会返回错误。
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	values := [][]float64{
+		{120, 132, 101, 134, 90, 230, 210},
+		{220, 182, 191, 234, 290, 330, 310},
+		{150, 232, 201, 154, 190, 330, 410},
+	}
+	p, err := charts.StreamRender(
+		values,
+		charts.TitleTextOptionFunc("Stream"),
+		charts.XAxisDataOptionFunc([]string{
+			"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
+		}, charts.FalseFlag()),
+		charts.LegendLabelsOptionFunc([]string{
+			"Email",
+			"Union Ads",
+			"Video Ads",
+		}),
+		// 可选：默认基线为 "center"
+		charts.StreamBaselineOptionFunc(charts.StreamBaselineWiggle),
+		// 可选：通过数值 x 坐标定位采样点，
+		// 例如使用 unix 时间戳处理非等距时间序列
+		charts.StreamXValuesOptionFunc([]float64{0, 1, 3, 6, 10, 15, 21}),
 	)
 	if err != nil {
 		panic(err)

@@ -104,6 +104,24 @@ func NewRange(opt AxisRangeOption) axisRange {
 	}
 }
 
+// NewFixedRange returns an axis range with the exact min and max,
+// no padding or unit snapping is applied. It is used by charts whose
+// data is already transformed (e.g. the free baseline of streamgraph).
+func NewFixedRange(opt AxisRangeOption) axisRange {
+	divideCount := opt.DivideCount
+	if divideCount <= 0 {
+		divideCount = defaultAxisDivideCount
+	}
+	return axisRange{
+		p:           opt.Painter,
+		divideCount: divideCount,
+		min:         opt.Min,
+		max:         opt.Max,
+		size:        opt.Size,
+		boundary:    opt.Boundary,
+	}
+}
+
 // Values returns values of range
 func (r axisRange) Values() []string {
 	offset := (r.max - r.min) / float64(r.divideCount)

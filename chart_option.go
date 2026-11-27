@@ -77,6 +77,14 @@ type ChartOption struct {
 	Children []ChartOption
 	// The value formatter
 	ValueFormatter ValueFormatter
+	// The baseline of stream chart, it can be "center" or "wiggle".
+	// Default value is "center"
+	StreamBaseline string
+	// The numeric x positions of stream chart samples, e.g. unix
+	// timestamps. Nil means evenly spaced samples. It enables
+	// non-equidistant time series and the length must equal the
+	// data length of every series.
+	StreamXValues []float64
 }
 
 // OptionFunc option function
@@ -354,6 +362,34 @@ func FunnelRender(values []float64, opts ...OptionFunc) (*Painter, error) {
 	return Render(ChartOption{
 		SeriesList: seriesList,
 	}, opts...)
+}
+
+// StreamRender stream chart render. The values are non-negative
+// multi-series samples sharing the same x axis, and a null value
+// (see GetNullValue) is treated as missing data.
+func StreamRender(values [][]float64, opts ...OptionFunc) (*Painter, error) {
+	seriesList := NewSeriesListDataFromValues(values, ChartTypeStream)
+	return Render(ChartOption{
+		SeriesList:     seriesList,
+		StreamBaseline: StreamBaselineCenter,
+	}, opts...)
+}
+
+// StreamBaselineOptionFunc sets the baseline of stream chart,
+// it can be StreamBaselineCenter or StreamBaselineWiggle.
+func StreamBaselineOptionFunc(baseline string) OptionFunc {
+	return func(opt *ChartOption) {
+		opt.StreamBaseline = baseline
+	}
+}
+
+// StreamXValuesOptionFunc sets the numeric x positions of stream
+// chart samples so that non-equidistant time series are positioned
+// proportionally, e.g. pass unix timestamps.
+func StreamXValuesOptionFunc(xValues []float64) OptionFunc {
+	return func(opt *ChartOption) {
+		opt.StreamXValues = xValues
+	}
 }
 
 // TableRender table chart render

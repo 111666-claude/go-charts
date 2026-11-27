@@ -21,7 +21,7 @@ Screenshot of common charts, the left part is light theme, the right part is gra
 
 ## Chart Type
 
-These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel` and `table`.
+These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar`, `funnel`, `stream` and `table`.
 
 ## Example
 
@@ -365,6 +365,57 @@ func main() {
 			"Inquiry",
 			"Order",
 		}),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+### Stream Chart
+
+A streamgraph renders non-negative multi-series values as continuous
+stacked color bands around a free baseline. It supports the `center`
+(symmetric) and `wiggle` (minimized wiggle) baselines, keeps the series
+order stable and supports non-equidistant time series through
+`StreamXValuesOptionFunc`. A null value is treated as missing data,
+negative and non-finite values return an error.
+
+```go
+package main
+
+import (
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	values := [][]float64{
+		{120, 132, 101, 134, 90, 230, 210},
+		{220, 182, 191, 234, 290, 330, 310},
+		{150, 232, 201, 154, 190, 330, 410},
+	}
+	p, err := charts.StreamRender(
+		values,
+		charts.TitleTextOptionFunc("Stream"),
+		charts.XAxisDataOptionFunc([]string{
+			"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
+		}, charts.FalseFlag()),
+		charts.LegendLabelsOptionFunc([]string{
+			"Email",
+			"Union Ads",
+			"Video Ads",
+		}),
+		// optional: the default baseline is "center"
+		charts.StreamBaselineOptionFunc(charts.StreamBaselineWiggle),
+		// optional: position the samples by numeric x values,
+		// e.g. unix timestamps for non-equidistant time series
+		charts.StreamXValuesOptionFunc([]float64{0, 1, 3, 6, 10, 15, 21}),
 	)
 	if err != nil {
 		panic(err)
