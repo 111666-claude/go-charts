@@ -18,7 +18,7 @@
 
 ## 支持图表类型
 
-支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel` 以及 `table`
+支持以下的图表类型：`line`, `bar`,  `horizontal bar`, `pie`, `radar`, `funnel`, `slope` 以及 `table`
 
 
 ## 示例
@@ -376,6 +376,61 @@ func main() {
 	// snip...
 }
 ```
+
+### 坡度图（Slope Chart）
+
+坡度图用于展示两个时点的成对数值排名变化：左右两侧共用一条数值轴，
+端点始终绘制在真实数值对应的位置，连接线直观体现各角色的上升与下降。
+
+```go
+package main
+
+import (
+	"math"
+
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	data := []charts.SlopeChartData{
+		{Name: "A", Left: 1, Right: 5},
+		{Name: "B", Left: 4, Right: 2},
+		// 非有限值（NaN、+Inf/-Inf）或库的空值会被视为缺测：
+		// 该侧不绘制端点和连接线，标签显示缺测文本（默认为 "-"）
+		{Name: "C", Left: 3, Right: math.NaN()},
+	}
+	p, err := charts.SlopeRender(
+		data,
+		charts.SlopeTypeOptionFunc(charts.ChartOutputPNG),
+		charts.SlopeTitleOptionFunc(charts.TitleOption{Text: "坡度图"}),
+		charts.SlopeTimeLabelOptionFunc("发布前", "发布后"),
+		charts.SlopeLabelShowOptionFunc(true),
+		// 按某个时点稳定排序，相同值保持输入顺序
+		charts.SlopeSortOptionFunc(charts.SlopeSortLeft, charts.SlopeOrderDesc),
+		charts.SlopeMinMaxOptionFunc(0, 6),
+	)
+	if err != nil {
+		panic(err)
+	}
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+`SlopeRender` 的入参为 `[]SlopeChartData`，每行包含名称 `Name` 及成对的
+`Left`、`Right` 数值。主要配置：
+
+- `SlopeSortOptionFunc(sortBy, sortOrder)`：按 `SlopeSortLeft` 或
+  `SlopeSortRight` 稳定排序，支持 `SlopeOrderAsc`/`SlopeOrderDesc`（默认），
+  缺测值始终排在最后。
+- `SlopeColorsOptionFunc(colors...)` 或每行的 `Style.StrokeColor`：指定行颜色，
+  排名变化时颜色始终跟随实体。
+- `SlopeLabelShowOptionFunc(true)`：在两侧显示名称和数值标签；标签密集时只
+  调整标签位置并绘制引导线，端点符号始终保持在真实数据坐标上。
+- `SlopeTimeLabelOptionFunc(left, right)`：设置两个时点的标签。
 
 ### Table
 

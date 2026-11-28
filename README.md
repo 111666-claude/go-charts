@@ -21,7 +21,7 @@ Screenshot of common charts, the left part is light theme, the right part is gra
 
 ## Chart Type
 
-These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar` or `funnel` and `table`.
+These chart types are supported: `line`, `bar`, `horizontal bar`, `pie`, `radar`, `funnel`, `slope` and `table`.
 
 ## Example
 
@@ -377,6 +377,64 @@ func main() {
 	// snip...
 }
 ```
+
+### Slope Chart
+
+A slope chart draws named paired values at two time points. Both sides share
+one value axis, every endpoint is drawn at the real value position and the
+connecting line shows who rises and who falls.
+
+```go
+package main
+
+import (
+	"math"
+
+	"github.com/vicanso/go-charts/v2"
+)
+
+func main() {
+	data := []charts.SlopeChartData{
+		{Name: "A", Left: 1, Right: 5},
+		{Name: "B", Left: 4, Right: 2},
+		// A non-finite value (NaN, +Inf/-Inf) or the library null value is
+		// treated as missing: no symbol or connecting line is drawn on that
+		// side, and the label shows the MissingText (default "-")
+		{Name: "C", Left: 3, Right: math.NaN()},
+	}
+	p, err := charts.SlopeRender(
+		data,
+		charts.SlopeTypeOptionFunc(charts.ChartOutputPNG),
+		charts.SlopeTitleOptionFunc(charts.TitleOption{Text: "Slope Chart"}),
+		charts.SlopeTimeLabelOptionFunc("Before", "After"),
+		charts.SlopeLabelShowOptionFunc(true),
+		// Stable sort by one time point, equal values keep their input order
+		charts.SlopeSortOptionFunc(charts.SlopeSortLeft, charts.SlopeOrderDesc),
+		charts.SlopeMinMaxOptionFunc(0, 6),
+	)
+	if err != nil {
+		panic(err)
+	}
+	buf, err := p.Bytes()
+	if err != nil {
+		panic(err)
+	}
+	// snip...
+}
+```
+
+`SlopeRender` takes `[]SlopeChartData`, each row has a `Name` and the paired
+`Left`/`Right` values. Main option funcs:
+
+- `SlopeSortOptionFunc(sortBy, sortOrder)`: stable sort by `SlopeSortLeft` or
+  `SlopeSortRight`, in `SlopeOrderAsc` or `SlopeOrderDesc` (default); missing
+  values are always ranked last.
+- `SlopeColorsOptionFunc(colors...)` or per-row `Style.StrokeColor`: the row
+  color, a row keeps its color even when its rank changes.
+- `SlopeLabelShowOptionFunc(true)`: name and value labels on both sides; when
+  labels are dense they are pushed apart with leader lines, the endpoint
+  symbols always stay at their real data coordinates.
+- `SlopeTimeLabelOptionFunc(left, right)`: the two time point labels.
 
 ### Table
 
